@@ -1,0 +1,17 @@
+<div class="col-xl-3 theiaStickySidebar">
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex flex-column list-group settings-list">
+                <a href="{{ route('company.bussiness.setting', $company->account_url) }}" class="d-inline-flex align-items-center rounded {{ Route::currentRouteName() == 'company.bussiness.setting' ? 'active' : '' }} py-2 px-3">{!! Route::currentRouteName() == 'company.bussiness.setting' ? '<i class="ti ti-arrow-badge-right me-2"></i>' : '' !!}Business Settings</a>
+                <a href="{{ route('company.seo.setting', $company->account_url) }}" class="d-inline-flex align-items-center rounded {{ Route::currentRouteName() == 'company.seo.setting' ? 'active' : '' }} py-2 px-3">{!! Route::currentRouteName() == 'company.seo.setting' ? '<i class="ti ti-arrow-badge-right me-2"></i>' : '' !!}SEO Settings</a>
+                <a href="{{ route('company.localization.setting', $company->account_url) }}" class="d-inline-flex align-items-center rounded {{ Route::currentRouteName() == 'company.localization.setting' ? 'active' : '' }} py-2 px-3">{!! Route::currentRouteName() == 'company.localization.setting' ? '<i class="ti ti-arrow-badge-right me-2"></i>' : '' !!}Localization</a>
+                <a href="{{ route('company.prefix', $company->account_url) }}" class="d-inline-flex align-items-center rounded {{ Route::currentRouteName() == 'company.prefix' ? 'active' : '' }} py-2 px-3">{!! Route::currentRouteName() == 'company.prefix' ? '<i class="ti ti-arrow-badge-right me-2"></i>' : '' !!}Prefixes</a>
+                <a href="{{ route('company.preferences', $company->account_url) }}" class="d-inline-flex align-items-center rounded {{ Route::currentRouteName() == 'company.preferences' ? 'active' : '' }} py-2 px-3">{!! Route::currentRouteName() == 'company.preferences' ? '<i class="ti ti-arrow-badge-right me-2"></i>' : '' !!}Preferences</a>
+                <a href="{{ route('company.appearance', $company->account_url) }}" class="d-inline-flex align-items-center rounded {{ Route::currentRouteName() == 'company.appearance' ? 'active' : '' }} py-2 px-3">{!! Route::currentRouteName() == 'company.appearance' ? '<i class="ti ti-arrow-badge-right me-2"></i>' : '' !!}Appearance</a>
+                <a href="{{ route('company.language', $company->account_url) }}" class="d-inline-flex align-items-center rounded {{ Route::currentRouteName() == 'company.language' ? 'active' : '' }} py-2 px-3">{!! Route::currentRouteName() == 'company.language' ? '<i class="ti ti-arrow-badge-right me-2"></i>' : '' !!}Language</a>
+                <a href="{{ route('company.authentication.setting', $company->account_url) }}" class="d-inline-flex align-items-center rounded {{ Route::currentRouteName() == 'company.authentication.setting' ? 'active' : '' }} py-2 px-3">{!! Route::currentRouteName() == 'company.authentication.setting' ? '<i class="ti ti-arrow-badge-right me-2"></i>' : '' !!}Authentication Settings</a>
+                <a href="{{ route('company.ai.setting', $company->account_url) }}" class="d-inline-flex align-items-center rounded {{ Route::currentRouteName() == 'company.ai.setting' ? 'active' : '' }} py-2 px-3">{!! Route::currentRouteName() == 'company.ai.setting' ? '<i class="ti ti-arrow-badge-right me-2"></i>' : '' !!}AI Settings</a>
+            </div>
+        </div>
+    </div>
+</div>
