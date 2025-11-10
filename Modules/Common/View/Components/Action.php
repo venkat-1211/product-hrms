@@ -14,11 +14,13 @@ class Action extends Component
     public array $target;  //modal
     public array $list;  //eye, edit, delete
     public int $id;   // id
-    public function __construct(array $target, array $list, int $id)
+    public string $permission;
+    public function __construct(array $target, array $list, int $id, string $permission)
     {
         $this->target = $target;
         $this->list = $list;
         $this->id = $id;
+        $this->permission = $permission;
     }
 
     /**

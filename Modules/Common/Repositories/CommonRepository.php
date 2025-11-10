@@ -240,6 +240,74 @@ class CommonRepository implements CommonRepositoryInterface
         );
     }
 
+    public function addHolidayFields($handler, $company)
+    {
+        $holidayData = [
+            'company_id' => $company->id,
+        ];
+    
+        $holidayFieldsData = [
+            [
+                "company_id" => $company->id,
+                "key" => "title",
+                "label" => "Holiday Title",
+                "type" => "text",
+                "visibility" => (["form" => true, "list" => true, "api" => true]),
+                "validation" => json_encode(["required", "string"]),
+                "is_required" => true,
+                "sort_order" => 1,
+            ],
+            [
+                "company_id" => $company->id,
+                "key" => "date",
+                "label" => "Holiday Date",
+                "type" => "date",
+                "visibility" => (["form" => true, "list" => true, "api" => true]),
+                "validation" => json_encode(["required", "date"]),
+                "is_required" => true,
+                "sort_order" => 2,
+            ],
+            [
+                "company_id" => $company->id,
+                "key" => "description",
+                "label" => "Description",
+                "type" => "textarea",
+                "visibility" => (["form" => true, "list" => true, "api" => true]),
+                "validation" => json_encode([]),
+                "is_required" => false,
+                "sort_order" => 3,
+            ],
+            [
+                "company_id" => $company->id,
+                "key" => "status",
+                "label" => "Status",
+                "type" => "select",
+                "options" => json_encode(["Active", "Inactive"]),
+                "visibility" => (["form" => true, "list" => true, "api" => true]),
+                "validation" => json_encode(["in:Active,Inactive"]),
+                "is_required" => false,
+                "sort_order" => 4,
+            ],
+        ];
+    
+        // Create holiday record first
+        if ($handler->create(
+            GenericFormData::fromArray($holidayData),
+            'hrm',
+            'Holiday'
+        )) {
+            // Then create all holiday fields
+            foreach ($holidayFieldsData as $field) {
+                $handler->create(
+                    GenericFormData::fromArray($field),
+                    'hrm',
+                    'HolidayField'
+                );
+            }
+        }
+    }
+    
+
     public function addLocalizationSetting($request, $handler, $company) {
         $genericFormData = GenericFormData::fromRequest($request, ['language', 'language_switcher', 'timezone', 'date_format', 'time_format', 'financial_year', 'starting_month', 'currency', 'currency_symbol', 'currency_position', 'decimal_seperator', 'thousand_seperator', 'countries_restriction', 'allowed_files', 'max_file_size']);
 

@@ -91,6 +91,7 @@ class AuthRepository implements AuthRepositoryInterface
         ]);
 
         $password = $data->get('password');
+        $remember = $request->filled('remember');
 
         // 🔒 Superadmin login
         if (is_null($company)) {
@@ -101,7 +102,7 @@ class AuthRepository implements AuthRepositoryInterface
                 return back()->with('error', 'Invalid superadmin credentials.');
             }
 
-            Auth::login($user);
+            Auth::login($user, $remember);
             return redirect()->route('super-admin-dashboard')->with('success', 'Superadmin login successful!');
         }
 
@@ -119,7 +120,7 @@ class AuthRepository implements AuthRepositoryInterface
             return back()->with('error', 'Invalid credentials.');
         }
 
-        Auth::login($user);
+        Auth::login($user, $remember);
         return redirect()->route('company.dashboard', $company->account_url)->with('success', 'Company login successful!');
     }
 

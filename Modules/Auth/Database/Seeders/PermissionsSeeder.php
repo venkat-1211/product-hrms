@@ -227,7 +227,7 @@ class PermissionsSeeder extends Seeder
 
             // Holiday
             ['name' => 'holidays', 'display_name' => 'Holiday', 'description' => 'Access For Full Holiday Module Access'],
-            ['name' => 'holidays_list', 'display_name' => 'Holiday List', 'description' => 'Access For Holiday List'],
+            ['name' => 'holidays_view', 'display_name' => 'Holiday List', 'description' => 'Access For Holiday List'],
             ['name' => 'holidays_add', 'display_name' => 'Holiday Add', 'description' => 'Access For Holiday Add'],
             ['name' => 'holidays_edit', 'display_name' => 'Holiday Edit', 'description' => 'Access For Holiday Edit'],
             ['name' => 'holidays_delete', 'display_name' => 'Holiday Delete', 'description' => 'Access For Holiday Delete'],

@@ -7,6 +7,8 @@ use Modules\Common\Http\Requests\BaseFormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
+use DB;
 
 class AddEmployeeRequest extends BaseFormRequest
 {
@@ -43,21 +45,62 @@ class AddEmployeeRequest extends BaseFormRequest
      */
     public function rules(): array
     {
+
+        $companyId = request()->route('company')->id ?? request()->input('company_id');
+        
         return [
 
             // profile table
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'first_name' => 'required|string',
             'last_name' => 'nullable|string',
-            'employee_id' => 'required|string|unique:profiles,employee_id',
+            // Employee ID must be unique across profiles for same company
+            'employee_id' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) use ($companyId) {
+                    $exists = DB::table('profiles')
+                        ->join('users', 'profiles.user_id', '=', 'users.id')
+                        ->where('users.company_id', $companyId)
+                        ->where('profiles.employee_id', $value)
+                        ->exists();
+
+                    if ($exists) {
+                        $fail('The ' . $attribute . ' has already been taken in this company.');
+                    }
+                },
+            ],
             'joining_date' => 'required|date',
-            'phone_number' => 'required|string|unique:profiles,phone_number',
+            // Phone number must be unique within same company
+            'phone_number' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) use ($companyId) {
+                    $exists = DB::table('profiles')
+                        ->join('users', 'profiles.user_id', '=', 'users.id')
+                        ->where('users.company_id', $companyId)
+                        ->where('profiles.phone_number', $value)
+                        ->exists();
+
+                    if ($exists) {
+                        $fail('The ' . $attribute . ' has already been taken in this company.');
+                    }
+                },
+            ],
             'address' => 'required|string',
             'about' => 'nullable|string',
 
             // users table
-            'username' => 'required|string|unique:users,username',
-            'email' => 'required|email|unique:users,email',
+            'username' => [
+                'required',
+                'string',
+                Rule::unique('users', 'username')->where(fn($q) => $q->where('company_id', $companyId)),
+            ],
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')->where(fn($q) => $q->where('company_id', $companyId)),
+            ],
             'password' => 'required|string|min:8',
             'confirm_password' => 'required|string|same:password',
 

@@ -1,0 +1,34 @@
+<div class="action-icon d-inline-flex">
+    @foreach ($list as $index => $type)
+        @php 
+        $modalId = $target[$index] ?? null; 
+        $id = $id ?? null;
+        @endphp
+
+        @if ($type === 'eye')
+            @if(!empty($permission))
+                @permission($permission)
+                    <a href="#" class="me-2" data-bs-toggle="modal" data-bs-target="#{{ $modalId }}" data-id="{{ $id }}">
+                        <i class="ti ti-eye"></i>
+                    </a>
+                @endpermission
+            @endif
+        @elseif ($type === 'edit')
+            @if(!empty($permission))
+                @permission($permission)
+                    <a href="#" class="me-2" data-bs-toggle="modal" data-bs-target="#{{ $modalId }}" data-id="{{ $id }}">
+                        <i class="ti ti-edit"></i>
+                    </a>
+                @endpermission
+            @endif
+        @elseif ($type === 'delete')
+            @if(!empty($permission))
+                @permission($permission)
+                    <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#{{ $modalId }}" data-id="{{ $id }}">
+                        <i class="ti ti-trash"></i>
+                    </a>
+                @endpermission
+            @endif
+        @endif
+    @endforeach
+</div>

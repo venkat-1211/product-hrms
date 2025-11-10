@@ -34,6 +34,11 @@ class EmployeeController extends Controller
         return view('hrm::employee.list-view', compact('permissions', 'departments', 'employees'));
     }
 
+    public function gridView()
+    {
+        return view('hrm::employee.grid-view');
+    }
+
     public function employeesDataTable()
     {
         return $this->hrmRepository->employeesDataTable();

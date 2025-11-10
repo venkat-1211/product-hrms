@@ -9,6 +9,7 @@ use Modules\SuperAdmin\Repositories\Interfaces\CompanyRepositoryInterface;
 use Modules\Common\Helpers\EnumInspector;
 use Modules\SuperAdmin\Http\Requests\AddCompanyRequest;
 use Modules\Common\Actions\HandleFormSubmission;
+use Modules\SuperAdmin\Models\Company;
 
 class CompanyController extends Controller
 {

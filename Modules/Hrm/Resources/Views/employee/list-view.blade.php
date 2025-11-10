@@ -302,7 +302,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <div class="d-flex align-items-center">
-                        <h4 class="modal-title me-2">Add New Employee</h4><span>Employee  ID : EMP -0024</span>
+                        <h4 class="modal-title me-2">Add New Employee</h4><span>Employee  ID : {{ $company->prefix->data['Employee'] ?? 'EMP-00' }} 00</span>
                     </div>
                     <button type="button" class="btn-close custom-btn-close" data-bs-dismiss="modal" aria-label="Close">
                         <i class="ti ti-x"></i>
@@ -514,6 +514,39 @@
                                 <div class="table-responsive border rounded">
                                     <table class="table">
                                         <tbody>
+                                            <tr class="bg-light fw-bold text-center">
+                                                <td class="text-start">Select All</td>
+                                                <td>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input select-all-column" type="checkbox" data-column="read" id="selectAllRead">
+                                                        <label class="form-check-label small" for="selectAllRead">Read</label>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input select-all-column" type="checkbox" data-column="write" id="selectAllWrite">
+                                                        <label class="form-check-label small" for="selectAllWrite">Write</label>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input select-all-column" type="checkbox" data-column="create" id="selectAllCreate">
+                                                        <label class="form-check-label small" for="selectAllCreate">Create</label>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input select-all-column" type="checkbox" data-column="delete" id="selectAllDelete">
+                                                        <label class="form-check-label small" for="selectAllDelete">Delete</label>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input select-all-column" type="checkbox" data-column="export" id="selectAllExport">
+                                                        <label class="form-check-label small" for="selectAllExport">Export</label>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                             @forelse ($permissions as $menu)
                                                 {{-- Top-level Menu --}}
                                                 <tr>
@@ -1447,6 +1480,11 @@
 
                 $("input[role='switch']").prop('checked', isChecked);
                 $(".select-all").prop('checked', isChecked);
+                $("#selectAllRead").prop('checked', isChecked);
+                $("#selectAllWrite").prop('checked', isChecked);
+                $("#selectAllCreate").prop('checked', isChecked);
+                $("#selectAllDelete").prop('checked', isChecked);
+                $("#selectAllExport").prop('checked', isChecked);
 
                 $("input[role='switch']").each(function () {
                     const baseVal = $(this).val();
@@ -1476,6 +1514,11 @@
                 });
 
                 $(".all-switch").prop('checked', isChecked);
+                $("#selectAllRead").prop('checked', isChecked);
+                $("#selectAllWrite").prop('checked', isChecked);
+                $("#selectAllCreate").prop('checked', isChecked);
+                $("#selectAllDelete").prop('checked', isChecked);
+                $("#selectAllExport").prop('checked', isChecked);
             });
 
             // Any permission checkbox toggle auto-controls its parent switch
@@ -1522,6 +1565,71 @@
                 } else {
                     $designationSelect.empty().append(`<option>Select a department first</option>`);
                 }
+            });
+
+            // Handle Select All Read
+            $("#selectAllRead").on("change", function () {
+                let checked = $(this).is(":checked");
+                $("input.form-check-input[value$='_view']").prop("checked", checked);
+            });
+
+            // Optionally: Update "Select All" if individual boxes change
+            $(document).on("change", "input.form-check-input[value$='_view']", function () {
+                let total = $("input.form-check-input[value$='_view']").length;
+                let checkedCount = $("input.form-check-input[value$='_view']:checked").length;
+                $("#selectAllRead").prop("checked", total === checkedCount);
+            });
+
+            // Handle Select All Write
+            $("#selectAllWrite").on("change", function () {
+                let checked = $(this).is(":checked");
+                $("input.form-check-input[value$='_edit']").prop("checked", checked);
+            });
+
+            // Optionally: Update "Select All" if individual boxes change
+            $(document).on("change", "input.form-check-input[value$='_edit']", function () {
+                let total = $("input.form-check-input[value$='_edit']").length;
+                let checkedCount = $("input.form-check-input[value$='_edit']:checked").length;
+                $("#selectAllWrite").prop("checked", total === checkedCount);
+            });
+
+            // Handle Select All Create
+            $("#selectAllCreate").on("change", function () {
+                let checked = $(this).is(":checked");
+                $("input.form-check-input[value$='_add']").prop("checked", checked);
+            });
+
+            // Optionally: Update "Select All" if individual boxes change
+            $(document).on("change", "input.form-check-input[value$='_add']", function () {
+                let total = $("input.form-check-input[value$='_add']").length;
+                let checkedCount = $("input.form-check-input[value$='_add']:checked").length;
+                $("#selectAllCreate").prop("checked", total === checkedCount);
+            });
+
+            // Handle Select All Delete
+            $("#selectAllDelete").on("change", function () {
+                let checked = $(this).is(":checked");
+                $("input.form-check-input[value$='_delete']").prop("checked", checked);
+            });
+
+            // Optionally: Update "Select All" if individual boxes change
+            $(document).on("change", "input.form-check-input[value$='_delete']", function () {
+                let total = $("input.form-check-input[value$='_delete']").length;
+                let checkedCount = $("input.form-check-input[value$='_delete']:checked").length;
+                $("#selectAllDelete").prop("checked", total === checkedCount);
+            });
+
+            // Handle Select All Export
+            $("#selectAllExport").on("change", function () {
+                let checked = $(this).is(":checked");
+                $("input.form-check-input[value$='_export']").prop("checked", checked);
+            });
+
+            // Optionally: Update "Select All" if individual boxes change
+            $(document).on("change", "input.form-check-input[value$='_export']", function () {
+                let total = $("input.form-check-input[value$='_export']").length;
+                let checkedCount = $("input.form-check-input[value$='_export']:checked").length;
+                $("#selectAllExport").prop("checked", total === checkedCount);
             });
 
 

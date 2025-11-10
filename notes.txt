@@ -93,3 +93,8 @@ Notes:
   php artisan db:seed --class="Modules\Auth\Database\Seeders\RolesSeeder"
   php artisan db:seed --class="Modules\Auth\Database\Seeders\PermissionsSeeder"
   php artisan db:seed --class="Modules\Common\Database\Seeders\ModuleSeeder"
+5. permission set in blade:
+                    @permission('holidays_add')   // single
+                    @permission('holidays_add|holidays')   // multiple, like OR
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#add_holiday" class="btn btn-primary d-flex align-items-center"><i class="ti ti-circle-plus me-2"></i>Add Holiday</a>
+                @endpermission

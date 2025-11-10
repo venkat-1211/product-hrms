@@ -11,6 +11,7 @@ use Modules\Common\Models\Localization;
 use Modules\Common\Models\AuthenticationSetting;
 use Modules\Common\Models\LeaveType;
 use Modules\Common\Models\MaintenanceMode;
+use Modules\Hrm\Models\HolidayField;
 
 class Company extends Model
 {
@@ -67,6 +68,16 @@ class Company extends Model
     public function leaveTypes()
     {
         return $this->hasMany(LeaveType::class);
+    }
+
+    public function holidays()
+    {
+        return $this->hasMany(Holiday::class);
+    }
+
+    public function holidayFields()
+    {
+        return $this->hasMany(HolidayField::class);
     }
 
     public function getStatusColorAttribute(): string

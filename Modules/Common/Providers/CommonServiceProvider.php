@@ -7,6 +7,7 @@ use Modules\Common\Repositories\CommonRepository;
 use Modules\Common\Repositories\Interfaces\CommonRepositoryInterface;
 use Illuminate\Support\Facades\Blade;
 use Modules\Common\View\Components\NoDataAvailable;
+use Modules\Common\View\Components\DynamicButton;
 use Modules\Common\View\Components\StatusBadge;
 use Modules\Common\View\Components\SettingsNavbar;
 use Modules\Common\View\Components\SettingsBreadCrumb;
@@ -34,6 +35,7 @@ class CommonServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Blade::component('no-data-available', NoDataAvailable::class);
+        Blade::component('dynamic-button', DynamicButton::class);
         Blade::component('status-badge',  StatusBadge::class);
         Blade::component('action',  Action::class);
         Blade::component('settings-navbar',  SettingsNavbar::class);

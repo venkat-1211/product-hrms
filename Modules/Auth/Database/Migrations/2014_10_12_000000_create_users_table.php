@@ -15,13 +15,17 @@ return new class extends Migration
             $table->id();
             $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('username', 50);
-            $table->string('email', 100)->unique();
+            $table->string('email', 100);
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
-            $table->tinyInteger('status')->default(1);
+            $table->enum('status', ['Active', 'Inactive'])->default('Active');
             $table->softDeletes(); // Allows profile recovery if deleted
             $table->timestamps();
+
+            // Scoped unique indexes (company-wise)
+            $table->unique(['company_id', 'username']);
+            $table->unique(['company_id', 'email']);
         });
     }
 

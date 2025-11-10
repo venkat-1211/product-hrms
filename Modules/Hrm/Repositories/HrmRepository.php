@@ -8,6 +8,7 @@ use Modules\SuperAdmin\Models\Package;
 use Modules\Common\Models\Module;
 use Modules\Hrm\Models\Department;
 use Modules\Hrm\Models\Designation;
+use Modules\Hrm\Models\Holiday;
 use Modules\Common\Data\GenericFormData;
 use DB;
 use Modules\Common\Helpers\FileHelper;
@@ -154,46 +155,238 @@ class HrmRepository implements HrmRepositoryInterface
 
         // Profile table
         // File Upload
-        $profilePath = FileHelper::UploadFile($request->file('profile_image'), 'assets/img/users/profile');
-        $profileData = [
-            'user_id' => $user->id, 
-            'profile_image' => $profilePath ?? '',
-            'first_name' => $genericFormData->get('first_name'),
-            'last_name' => $genericFormData->get('last_name'),
-            'employee_id' => $genericFormData->get('employee_id'),
-            'joining_date' => $genericFormData->get('joining_date'),
-            'phone_number' => $genericFormData->get('phone_number'),
-            'address' => json_encode([
-                'address' => $genericFormData->get('address')
-            ]),
-            'about' => $genericFormData->get('about'),
-        ];
-        $profileData = GenericFormData::fromArray($profileData);
-        $profile = $handler->create($profileData, 'Auth', 'Profile');
+        if ($user) {
+            $profilePath = FileHelper::UploadFile($request->file('profile_image'), 'assets/img/users/profile');
+            $profileData = [
+                'user_id' => $user->id, 
+                'profile_image' => $profilePath ?? '',
+                'first_name' => $genericFormData->get('first_name'),
+                'last_name' => $genericFormData->get('last_name'),
+                'employee_id' => $genericFormData->get('employee_id'),
+                'joining_date' => $genericFormData->get('joining_date'),
+                'phone_number' => $genericFormData->get('phone_number'),
+                'address' => json_encode([
+                    'address' => $genericFormData->get('address')
+                ]),
+                'about' => $genericFormData->get('about'),
+            ];
+            $profileData = GenericFormData::fromArray($profileData);
+            $profile = $handler->create($profileData, 'Auth', 'Profile');
 
-        // User depatment store
-        $user->departments()->sync([$genericFormData->get('department_id')]);
+            // User depatment store
+            $user->departments()->sync([$genericFormData->get('department_id')]);
 
-        // User designation store
-        $user->designations()->sync([$genericFormData->get('designation_id')]);
+            // User designation store
+            $user->designations()->sync([$genericFormData->get('designation_id')]);
 
-        // user roles set
-        $user->addRole($genericFormData->get('designation_id'), $genericFormData->get('company_id'));
+            // user roles set
+            $user->addRole($genericFormData->get('designation_id'), $genericFormData->get('company_id'));
 
-        // user_permissions set
-        $permissionNames = $genericFormData->get('permissions');
-        $permissions = Permission::whereIn('name', $permissionNames)->get();
-        
-        $permissionIds = $permissions->pluck('id');
-        foreach ($permissionIds as $permissionId) {
-            DB::table('permission_user')->updateOrInsert([
-                'permission_id' => $permissionId,
-                'user_id'      => $user->id,
-                'user_type'     => 'Modules\Auth\Models\User',
-                'company_id'    => $genericFormData->get('company_id'),
-            ]);
+            // user_permissions set
+            $permissionNames = $genericFormData->get('permissions');
+            if($permissionNames){
+                $permissions = Permission::whereIn('name', $permissionNames)->get();
+            
+                $permissionIds = $permissions->pluck('id');
+                foreach ($permissionIds as $permissionId) {
+                    DB::table('permission_user')->updateOrInsert([
+                        'permission_id' => $permissionId,
+                        'user_id'      => $user->id,
+                        'user_type'     => 'Modules\Auth\Models\User',
+                        'company_id'    => $genericFormData->get('company_id'),
+                    ]);
+                }
+            }
+            
         }
 
         return $user;
     }
+
+    public function holidaysDataTable($company)
+    {
+        // Get visible fields for listing
+        $fields = $company->holidayFields()
+            ->whereJsonContains('visibility->list', true)
+            ->orderBy('sort_order')
+            ->get();
+    
+        // Base query with relationships
+        $query = Holiday::where('company_id', $company->id)
+            ->with(['meta']); // load meta once
+    
+        return DataTables::of($query)
+            ->addColumn('checkbox', fn($row) => '
+                <div class="form-check form-check-md">
+                    <input class="form-check-input" type="checkbox" value="' . $row->id . '">
+                </div>
+            ')
+            // Dynamically add each meta field column
+            // ->editColumn('id', fn($row) => $row->id) // keep id
+            ->addColumn('action', function ($row) {
+                return view('common::components.action', [
+                    'target' => ['edit_holiday', 'delete_modal'],
+                    'list'   => ['edit', 'delete'],
+                    'id'     => $row->id,
+                    'permission' => [
+                        'edit' => 'holidays|holidays_edit',
+                        'delete' => 'holidays|holidays_delete',
+                    ]
+                ])->render();
+            })
+            ->addColumn('dynamic_fields', function ($row) use ($fields) {
+                $data = [];
+                foreach ($fields as $field) {
+                    $meta = $row->meta->firstWhere('holiday_field_id', $field->id);
+                    $data[$field->key] = $meta->value ?? '-';
+                }
+                return $data;
+            })
+            ->rawColumns(['checkbox','action'])
+            ->make(true);
+    }
+    
+    
+
+    public function addHoliday($request, $handler, $company) : bool
+    {
+        /// 1. Create Holiday
+        $holidayData = [
+            'company_id' => $company->id,
+        ];
+        $holiday = $handler->create(
+            GenericFormData::fromArray($holidayData),
+            'Hrm',
+            'Holiday'
+        );
+
+        // 2. Get all visible form fields
+        $columns = $company->holidayFields()
+            ->whereJsonContains('visibility->form', true)
+            ->get()
+            ->keyBy('key'); // associative: key => HolidayField model
+
+        // 3. Extract request data
+        $genericFormData = GenericFormData::fromRequest($request);
+
+        // 4. Loop through request values and store in HolidayMeta
+        foreach ($genericFormData->all() as $fieldKey => $fieldValue) {
+            if (isset($columns[$fieldKey])) {
+                $finalData = [
+                    'holiday_id'       => $holiday->id,
+                    'holiday_field_id' => $columns[$fieldKey]->id,
+                    'value'            => $fieldValue,
+                ];
+
+                $handler->create(
+                    GenericFormData::fromArray($finalData),
+                    'Hrm',
+                    'HolidayMeta'
+                );
+            }
+        }
+
+        return true;
+
+    }
+
+    public function addNewFieldHoliday($request, $handler, $company) : bool
+    {
+        $genericFormData = GenericFormData::fromRequest($request, ['key', 'label', 'type', 'options', 'visibility', 'validation', 'is_required', 'is_searchable', 'is_filterable', 'sort_order']);
+        
+        $visibility = $genericFormData->get('visibility', []);
+
+        // Normalize to real boolean values
+        $normalizedVisibility = collect($visibility)
+            ->map(fn($val) => filter_var($val, FILTER_VALIDATE_BOOLEAN))
+            ->toArray();
+
+        $holidayFieldData = [
+            'company_id' => $company->id,
+            'key'        => $genericFormData->get('key'),
+            'label'      => $genericFormData->get('label'),
+            'type'       => $genericFormData->get('type'),
+            'options'    => $genericFormData->get('options'),
+            'visibility' => $normalizedVisibility,
+            'validation' => $genericFormData->get('validation'),
+            'is_required' => $genericFormData->get('is_required') ? 1 : 0,
+            'is_searchable' => $genericFormData->get('is_searchable') ? 1 : 0,
+            'is_filterable' => $genericFormData->get('is_filterable') ? 1 : 0,
+            'sort_order' => $genericFormData->get('sort_order'),
+        ];
+        $holidayField = $handler->create(
+            GenericFormData::fromArray($holidayFieldData),
+            'Hrm',
+            'HolidayField'
+        );
+
+        return true;
+    }
+
+    // public function holidayManageTable($request, $handler, $company): bool
+    // {
+    //     // Get all holiday fields for this company
+    //     $fields = $company->holidayFields()->get();
+
+    //     foreach ($fields as $field) {
+    //         // If checkbox was ticked → mark as true, else false
+    //         $isChecked = isset($request->fields[$field->id]);
+
+    //         // Decode visibility JSON into array
+    //         $visibility = is_array($field->visibility)
+    //             ? $field->visibility
+    //             : json_decode($field->visibility ?? '{}', true);
+
+    //         // Update only the "list" key
+    //         $visibility['list'] = $isChecked;
+
+    //         // Save back into DB
+    //         $field->update([
+    //             'visibility' => $visibility,
+    //         ]);
+    //     }
+
+    //     return true;
+    // }
+
+    public function holidayManageTable($request, $handler, $company)
+    {
+        // Validate the type (only "list" or "form" allowed)
+        if (! in_array($request->type, ['list', 'form'])) {
+            return false;
+        }
+
+        // Get all holiday fields for this company
+        $fields = $company->holidayFields()->get();
+
+        foreach ($fields as $field) {
+            // Checkbox checked → true, else false
+            $isChecked = isset($request->fields[$field->id]);
+
+            // Ensure visibility is an array
+            $visibility = is_array($field->visibility)
+                ? $field->visibility
+                : json_decode($field->visibility ?? '{}', true);
+
+            // Update only the "list" flag
+            $visibility[$request->type] = $isChecked;
+
+            // Build data for update
+            $finalData = [
+                'id'         => $field->id, // required so handler knows which record
+                'visibility' => $visibility,
+            ];
+
+            // Update HolidayField using GenericFormData
+            $handler->update(
+                GenericFormData::fromArray($finalData),
+                $field
+            );
+        }
+
+        return $request->type;
+            
+    }
+
+
 }

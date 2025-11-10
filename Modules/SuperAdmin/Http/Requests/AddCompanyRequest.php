@@ -13,7 +13,7 @@ class AddCompanyRequest extends BaseFormRequest
      * Determine if the user is authorized to make this request.
      */
 
-     protected $errorBag = 'addCompany'; // ✅ Tell Laravel to store validation errors in this named bag
+     protected $errorBag = 'addCompany'; // Tell Laravel to store validation errors in this named bag
 
     public function authorize(): bool
     {
@@ -86,7 +86,7 @@ class AddCompanyRequest extends BaseFormRequest
             redirect()
                 ->back()
                 ->withInput()
-                ->withErrors($validator, $this->errorBag) // ✅ use errorBag
+                ->withErrors($validator, $this->errorBag) // use errorBag
         );
     }
 }

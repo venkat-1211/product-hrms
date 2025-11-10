@@ -93,6 +93,9 @@ class CompanyRepository implements CompanyRepositoryInterface
         $commonRepository = app(CommonRepositoryInterface::class);
         $commonRepository->startPrefix($handler, $companyModel);
 
+        // Add Holiday Fields
+        $commonRepository->addHolidayFields($handler, $companyModel);
+
         return redirect()->route('companies')->with('success', 'Company added successfully!');
     }
 
